@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>江江約會管理</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <nav class="site-nav site-nav-title-only">
+    <div class="container" style="justify-content:center">
+      <span class="brand">
+        <span class="brand-mark">江</span>
+        <span class="brand-text">江江約會管理</span>
+      </span>
+    </div>
+  </nav>
+
+  <main class="container admin-layout">
+    <header class="page-header">
+      <h1>妹妹管理</h1>
+      <p class="region-blurb" style="display:block;color:var(--text-muted);max-width:36rem">此頁沒有公開入口，只有知道網址的人能使用。<span id="admin-cloud-note">本機模式：變更只存在此瀏覽器。</span></p>
+    </header>
+
+    <div class="admin-toolbar">
+      <input type="search" id="admin-search" class="field search" placeholder="搜尋…" />
+      <button type="button" class="btn btn-primary btn-sm" id="btn-add">＋ 新增妹妹</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>會員</th>
+            <th>年齡</th>
+            <th>城市</th>
+            <th>狀態</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="admin-tbody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="edit-modal">
+    <div class="glass-card modal" role="dialog" aria-modal="true">
+      <button class="modal-close" type="button" data-close-modal="edit-modal" aria-label="關閉">✕</button>
+      <h2 id="edit-title" style="margin-bottom:1rem">編輯會員</h2>
+      <form id="edit-form" class="form-grid">
+        <input type="hidden" id="e-id" />
+        <div class="form-row-2">
+          <div class="filter-group">
+            <label for="e-name">姓名</label>
+            <input id="e-name" class="field" required maxlength="20" />
+          </div>
+          <div class="filter-group">
+            <label for="e-age">年齡（22+）</label>
+            <input id="e-age" class="field" type="number" min="22" max="80" required />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="filter-group">
+            <label for="e-city">城市</label>
+            <select id="e-city" class="field" required></select>
+          </div>
+          <div class="filter-group">
+            <label for="e-gender">性別</label>
+            <select id="e-gender" class="field">
+              <option>女</option>
+              <option>男</option>
+              <option>其他</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>照片（可多張）</label>
+          <div class="photo-upload-multi">
+            <div class="photo-grid" id="e-photo-grid"></div>
+            <div class="photo-actions">
+              <input type="file" id="e-photo" accept="image/*" multiple />
+              <button type="button" class="btn btn-ghost btn-sm" id="e-photo-clear">清空照片</button>
+              <span style="color:var(--text-muted);font-size:0.8rem">最多 6 張，會自動壓縮</span>
+            </div>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label for="e-bio">介紹文字</label>
+          <textarea id="e-bio" class="field" rows="6" maxlength="800" required placeholder="寫下介紹（興趣、個性等都寫在這裡）…"></textarea>
+          <div style="color:var(--text-muted);font-size:0.8rem;margin-top:0.35rem"><span id="e-bio-count">0</span> / 800</div>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">儲存</button>
+          <button type="button" class="btn btn-ghost" data-close-modal="edit-modal">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="modal-backdrop" id="review-modal">
+    <div class="glass-card modal" role="dialog" aria-modal="true">
+      <button class="modal-close" type="button" data-close-modal="review-modal" aria-label="關閉">✕</button>
+      <h2 id="review-title" style="margin-bottom:0.35rem">評價</h2>
+      <p id="review-subtitle" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem"></p>
+      <div id="review-list" class="review-list"></div>
+      <form id="review-form" class="form-grid" style="margin-top:1rem">
+        <input type="hidden" id="r-member-id" />
+        <div class="filter-group">
+          <label for="r-text">評價內容</label>
+          <textarea id="r-text" class="field" rows="3" maxlength="400" required placeholder="寫下評價…"></textarea>
+        </div>
+        <div class="filter-group">
+          <label>評價圖片（可多張）</label>
+          <div class="photo-upload-multi">
+            <div class="photo-grid" id="r-photo-grid"></div>
+            <div class="photo-actions">
+              <input type="file" id="r-photo" accept="image/*" multiple />
+              <button type="button" class="btn btn-ghost btn-sm" id="r-photo-clear">清空圖片</button>
+              <span style="color:var(--text-muted);font-size:0.8rem">最多 4 張</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">新增評價</button>
+          <button type="button" class="btn btn-ghost" data-close-modal="review-modal">關閉</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>© 2026 江江約會管理</div>
+      <div class="legal">僅管理示範交友檔案，禁止用於非法或有償性服務用途。</div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cloud.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

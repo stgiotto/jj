@@ -1,0 +1,384 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const tbody = document.getElementById("admin-tbody");
+  const search = document.getElementById("admin-search");
+  const citySel = document.getElementById("e-city");
+  const form = document.getElementById("edit-form");
+  const editTitle = document.getElementById("edit-title");
+  const photoInput = document.getElementById("e-photo");
+  const photoGrid = document.getElementById("e-photo-grid");
+  const bioInput = document.getElementById("e-bio");
+  const bioCount = document.getElementById("e-bio-count");
+
+  const MAX_PHOTOS = 6;
+  let draftPhotos = [];
+
+  (window.XINXIAN_CITIES || []).forEach((c) => {
+    const o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    citySel.appendChild(o);
+  });
+
+  function updateBioCount() {
+    bioCount.textContent = String((bioInput.value || "").length);
+  }
+
+  function renderPhotoGrid() {
+    if (!draftPhotos.length) {
+      photoGrid.innerHTML = `<span class="empty-hint">尚未上傳照片</span>`;
+      return;
+    }
+    photoGrid.innerHTML = draftPhotos
+      .map(
+        (src, i) => `
+      <div class="thumb" data-i="${i}">
+        <img src="${XinXianUI.escapeHtml(src)}" alt="" />
+        <button type="button" class="rm" data-rm="${i}" aria-label="移除">✕</button>
+      </div>`
+      )
+      .join("");
+  }
+
+  photoGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-rm]");
+    if (!btn) return;
+    const i = Number(btn.dataset.rm);
+    draftPhotos.splice(i, 1);
+    renderPhotoGrid();
+  });
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("讀取失敗"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("圖片無法載入"));
+        img.onload = () => {
+          const max = 720;
+          let { width, height } = img;
+          if (width > max || height > max) {
+            const scale = Math.min(max / width, max / height);
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.72));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  photoInput.addEventListener("change", async () => {
+    const files = [...(photoInput.files || [])];
+    photoInput.value = "";
+    for (const file of files) {
+      if (draftPhotos.length >= MAX_PHOTOS) {
+        alert(`最多上傳 ${MAX_PHOTOS} 張照片。`);
+        break;
+      }
+      if (!file.type.startsWith("image/")) continue;
+      try {
+        const dataUrl = await compressImage(file);
+        draftPhotos.push(dataUrl);
+      } catch (_) {
+        alert("有一張圖片上傳失敗，已略過。");
+      }
+    }
+    renderPhotoGrid();
+  });
+
+  document.getElementById("e-photo-clear").addEventListener("click", () => {
+    draftPhotos = [];
+    renderPhotoGrid();
+  });
+
+  bioInput.addEventListener("input", updateBioCount);
+
+  async function render() {
+    const q = (search.value || "").trim().toLowerCase();
+    let list = await XinXianStore.getMembers();
+    if (q) {
+      list = list.filter((m) => {
+        const hay = [m.name, m.city, m.gender, m.bio].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">沒有符合的會員</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list
+      .map((m) => {
+        const on = m.active !== false;
+        const bioPreview = (m.bio || "").slice(0, 36) + ((m.bio || "").length > 36 ? "…" : "");
+        const n = XinXianUI.memberPhotos(m).length;
+        const photoNote = n ? `${n} 張照片` : "無照片";
+        return `
+        <tr data-id="${XinXianUI.escapeHtml(m.id)}">
+          <td>
+            <div class="cell-user">
+              ${XinXianUI.avatarHtml(m)}
+              <div>
+                <strong>${XinXianUI.escapeHtml(m.name)}</strong>
+                <div style="color:var(--text-muted);font-size:0.8rem">${XinXianUI.escapeHtml(bioPreview)}</div>
+                <div style="color:var(--text-muted);font-size:0.75rem">${photoNote}</div>
+              </div>
+            </div>
+          </td>
+          <td>${m.age}</td>
+          <td>${XinXianUI.escapeHtml(m.city)}</td>
+          <td><span class="badge ${on ? "badge-on" : "badge-off"}">${on ? "啟用中" : "已停用"}</span></td>
+          <td>
+            <div class="actions-cell">
+              <button type="button" class="btn btn-ghost btn-sm" data-act="edit">編輯</button>
+              <button type="button" class="btn btn-sm ${on ? "btn-danger" : "btn-success"}" data-act="toggle">${on ? "停用" : "啟用"}</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-act="delete">刪除</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-act="review">評價</button>
+            </div>
+          </td>
+        </tr>`;
+      })
+      .join("");
+  }
+
+
+  const MAX_REVIEW_PHOTOS = 4;
+  let draftReviewPhotos = [];
+
+  function renderReviewPhotoGrid() {
+    const grid = document.getElementById("r-photo-grid");
+    if (!grid) return;
+    if (!draftReviewPhotos.length) {
+      grid.innerHTML = `<span class="empty-hint">尚未上傳圖片</span>`;
+      return;
+    }
+    grid.innerHTML = draftReviewPhotos
+      .map(
+        (src, i) => `
+      <div class="thumb" data-i="${i}">
+        <img src="${XinXianUI.escapeHtml(src)}" alt="" />
+        <button type="button" class="rm" data-rm-rphoto="${i}" aria-label="移除">✕</button>
+      </div>`
+      )
+      .join("");
+  }
+
+  function openReviews(member) {
+    if (!member) return;
+    document.getElementById("r-member-id").value = member.id;
+    document.getElementById("review-title").textContent = "評價";
+    document.getElementById("review-subtitle").textContent = member.name + "（" + (member.reviews || []).length + " 則）";
+    document.getElementById("r-text").value = "";
+    draftReviewPhotos = [];
+    renderReviewPhotoGrid();
+    renderReviewList(member);
+    XinXianUI.openModal("review-modal");
+  }
+
+  function renderReviewList(member) {
+    const box = document.getElementById("review-list");
+    const reviews = [...(member.reviews || [])].reverse();
+    if (!reviews.length) {
+      box.innerHTML = `<div class="review-empty">尚無評價，在下方新增第一則。</div>`;
+      return;
+    }
+    box.innerHTML = reviews
+      .map((r) => {
+        const pics = (r.photos || []).map((src) => `<img src="${XinXianUI.escapeHtml(src)}" alt="" />`).join("");
+        return `
+      <div class="review-item" data-rid="${XinXianUI.escapeHtml(r.id)}">
+        <button type="button" class="rm-review" data-rm-review="${XinXianUI.escapeHtml(r.id)}">刪除</button>
+        <div>${XinXianUI.escapeHtml(r.text)}</div>
+        ${pics ? `<div class="pics">${pics}</div>` : ""}
+        <div class="meta">${XinXianUI.escapeHtml(r.at || "")}</div>
+      </div>`;
+      })
+      .join("");
+  }
+
+  function openEditor(member) {
+    const isNew = !member;
+    editTitle.textContent = isNew ? "新增妹妹" : "編輯會員";
+    document.getElementById("e-id").value = member?.id || "";
+    document.getElementById("e-name").value = member?.name || "";
+    document.getElementById("e-age").value = member?.age || 25;
+    document.getElementById("e-city").value = member?.city || (window.XINXIAN_CITIES || [])[0] || "台北";
+    document.getElementById("e-gender").value = member?.gender || "女";
+    document.getElementById("e-bio").value = member?.bio || "";
+    draftPhotos = XinXianUI.memberPhotos(member).slice(0, MAX_PHOTOS);
+    renderPhotoGrid();
+    updateBioCount();
+    XinXianUI.openModal("edit-modal");
+  }
+
+  tbody.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const tr = btn.closest("tr");
+    const id = tr?.dataset.id;
+    const act = btn.dataset.act;
+    if (act === "edit") {
+      openEditor(await XinXianStore.getMemberById(id));
+    } else if (act === "toggle") {
+      await XinXianStore.toggleMemberActive(id);
+      await render();
+    } else if (act === "delete") {
+      const m = await XinXianStore.getMemberById(id);
+      if (m && confirm(`確定刪除「${m.name}」？此操作無法復原。`)) {
+        await XinXianStore.deleteMember(id);
+        await render();
+      }
+    } else if (act === "review") {
+      openReviews(await XinXianStore.getMemberById(id));
+    }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const age = Number(document.getElementById("e-age").value);
+    if (age < 22) {
+      alert("示範會員年齡須為 22 歲以上。");
+      return;
+    }
+    const id = document.getElementById("e-id").value || XinXianStore.genId();
+    const existing = await XinXianStore.getMemberById(id);
+    try {
+      await XinXianStore.upsertMember({
+        id,
+        name: document.getElementById("e-name").value.trim(),
+        age,
+        city: document.getElementById("e-city").value,
+        gender: document.getElementById("e-gender").value,
+        bio: document.getElementById("e-bio").value.trim(),
+        interests: existing?.interests || [],
+        avatarHue: 210,
+        photos: draftPhotos.slice(),
+        photo: draftPhotos[0] || "",
+        active: existing ? existing.active !== false : true,
+        createdDaysAgo: existing?.createdDaysAgo ?? 0,
+        heat: existing?.heat ?? 50,
+        views: existing?.views ?? 0,
+        reviews: existing?.reviews || []
+      });
+      XinXianUI.closeModal("edit-modal");
+      await render();
+    } catch (err) {
+      console.error(err);
+      alert("儲存失敗：" + (err.message || err));
+    }
+  });
+
+  document.getElementById("btn-add").addEventListener("click", () => openEditor(null));
+  search.addEventListener("input", () => {
+    render();
+  });
+
+  document.getElementById("r-photo-grid").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-rm-rphoto]");
+    if (!btn) return;
+    draftReviewPhotos.splice(Number(btn.dataset.rmRphoto), 1);
+    renderReviewPhotoGrid();
+  });
+
+  document.getElementById("r-photo").addEventListener("change", async () => {
+    const files = [...(document.getElementById("r-photo").files || [])];
+    document.getElementById("r-photo").value = "";
+    for (const file of files) {
+      if (draftReviewPhotos.length >= MAX_REVIEW_PHOTOS) {
+        alert(`最多上傳 ${MAX_REVIEW_PHOTOS} 張圖片。`);
+        break;
+      }
+      if (!file.type.startsWith("image/")) continue;
+      try {
+        const dataUrl = await compressImage(file);
+        draftReviewPhotos.push(dataUrl);
+      } catch (_) {
+        alert("有一張圖片上傳失敗，已略過。");
+      }
+    }
+    renderReviewPhotoGrid();
+  });
+
+  document.getElementById("r-photo-clear").addEventListener("click", () => {
+    draftReviewPhotos = [];
+    renderReviewPhotoGrid();
+  });
+
+  document.getElementById("review-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const mid = document.getElementById("r-member-id").value;
+    const m = await XinXianStore.getMemberById(mid);
+    if (!m) return;
+    const text = document.getElementById("r-text").value.trim();
+    if (!text) return;
+    const now = new Date();
+    const at =
+      now.getFullYear() +
+      "/" +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      "/" +
+      String(now.getDate()).padStart(2, "0") +
+      " " +
+      String(now.getHours()).padStart(2, "0") +
+      ":" +
+      String(now.getMinutes()).padStart(2, "0");
+    const reviews = [
+      ...(m.reviews || []),
+      { id: XinXianStore.genId(), text, photos: draftReviewPhotos.slice(), at }
+    ];
+    try {
+      await XinXianStore.upsertMember({ ...m, reviews });
+      document.getElementById("r-text").value = "";
+      draftReviewPhotos = [];
+      renderReviewPhotoGrid();
+      const updated = await XinXianStore.getMemberById(mid);
+      document.getElementById("review-subtitle").textContent =
+        updated.name + "（" + (updated.reviews || []).length + " 則）";
+      renderReviewList(updated);
+      await render();
+    } catch (err) {
+      console.error(err);
+      alert("新增評價失敗：" + (err.message || err));
+    }
+  });
+
+  document.getElementById("review-list").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-rm-review]");
+    if (!btn) return;
+    const mid = document.getElementById("r-member-id").value;
+    const m = await XinXianStore.getMemberById(mid);
+    if (!m) return;
+    const rid = btn.dataset.rmReview;
+    const reviews = (m.reviews || []).filter((r) => r.id !== rid);
+    try {
+      await XinXianStore.upsertMember({ ...m, reviews });
+      const updated = await XinXianStore.getMemberById(mid);
+      document.getElementById("review-subtitle").textContent =
+        updated.name + "（" + (updated.reviews || []).length + " 則）";
+      renderReviewList(updated);
+      await render();
+    } catch (err) {
+      console.error(err);
+      alert("刪除評價失敗：" + (err.message || err));
+    }
+  });
+
+  const cloudNote = document.getElementById("admin-cloud-note");
+  if (cloudNote) {
+    cloudNote.textContent = XinXianStore.isCloudEnabled()
+      ? "雲端模式：會員與評價寫入 Supabase，所有訪客可見。"
+      : "本機模式：變更只存在此瀏覽器。啟用雲端請見 SUPABASE-SETUP.md。";
+  }
+
+  render().catch((err) => {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:2rem">載入失敗</td></tr>`;
+  });
+});

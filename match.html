@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>江江約會</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <nav class="site-nav site-nav-regions">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">江</span>
+        <span class="brand-text">江江約會</span>
+      </a>
+      <ul class="region-nav">
+        <li><a href="browse.html?region=north">北部</a></li>
+        <li><a href="browse.html?region=central">中部</a></li>
+        <li><a href="browse.html?region=south">南部</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container match-stage">
+    <header class="page-header" style="text-align:center;width:100%">
+      <h1>滑動配對</h1>
+      <p>喜歡就按 ♡，暫時略過按 ✕。配對狀態會保存在本機瀏覽器。</p>
+    </header>
+
+    <div class="toolbar-row">
+      <span id="queue-info" style="color:var(--text-muted);font-size:0.9rem"></span>
+      <button type="button" class="btn btn-ghost btn-sm" id="reset-swipes">重設配對紀錄</button>
+      <a class="btn btn-ghost btn-sm" href="browse.html">改瀏覽模式</a>
+    </div>
+
+    <div id="swipe-area"></div>
+  </main>
+
+  <div class="modal-backdrop" id="match-modal">
+    <div class="glass-card modal match-success" role="dialog" aria-modal="true">
+      <button class="modal-close" type="button" data-close-modal="match-modal" aria-label="關閉">✕</button>
+      <div class="match-pair" id="match-pair"></div>
+      <h2>配對成功！</h2>
+      <p id="match-msg">你們彼此有好感，可以開始認識對方了。</p>
+      <div class="modal-actions" style="justify-content:center">
+        <button type="button" class="btn btn-primary" data-close-modal="match-modal" id="match-continue">繼續配對</button>
+        <a class="btn btn-ghost" href="browse.html">查看檔案</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>© 2026 江江約會</div>
+      <div class="legal">本功能為合法交友配對示範，不含約會預約或有償服務。</div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cloud.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/match.js"></script>
+</body>
+</html>

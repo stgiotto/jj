@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>江江約會</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .sort-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .sort-tabs .sort-btn {
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-muted);
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.95rem;
+    }
+    .sort-tabs .sort-btn.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(120deg, #8b5cf6, #f472b6);
+      box-shadow: var(--glow);
+    }
+    .page-header p.region-blurb {
+      display: block;
+      max-width: 36rem;
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      line-height: 1.65;
+      margin-top: 0.5rem;
+    }
+    .surprise-banner {
+      display: inline-block;
+      margin-bottom: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      color: var(--gold, #e8c36a);
+      border: 1px solid rgba(232, 195, 106, 0.35);
+      background: rgba(232, 195, 106, 0.08);
+    }
+    .browse-search {
+      margin: 0 0 1rem;
+    }
+    .browse-search input {
+      width: 100%;
+      max-width: 28rem;
+      padding: 0.7rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .browse-search input::placeholder {
+      color: var(--text-muted);
+    }
+    .browse-search input:focus {
+      border-color: rgba(192, 132, 252, 0.55);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin: 0.5rem 0 2.5rem;
+    }
+    .pager .page-info {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .pager .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav site-nav-regions">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">江</span>
+        <span class="brand-text">江江約會</span>
+      </a>
+      <ul class="region-nav">
+        <li><a href="browse.html?region=north">北部</a></li>
+        <li><a href="browse.html?region=central">中部</a></li>
+        <li><a href="browse.html?region=south">南部</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <header class="page-header">
+      <h1>瀏覽會員</h1>
+      <p class="region-blurb" id="region-blurb" hidden></p>
+    </header>
+
+    <div class="browse-search">
+      <label class="sr-only" for="member-search">搜尋</label>
+      <input id="member-search" type="search" placeholder="搜尋…" autocomplete="off" />
+    </div>
+
+    <div class="sort-tabs" id="sort-tabs" role="tablist">
+      <button type="button" class="sort-btn active" data-sort="newest">最新</button>
+      <button type="button" class="sort-btn" data-sort="hot">最熱</button>
+      <button type="button" class="sort-btn" data-sort="views">瀏覽最多</button>
+    </div>
+
+    <p id="result-count" style="color:var(--text-muted);margin-bottom:1rem;font-size:0.9rem"></p>
+    <div class="profile-grid" id="profile-grid"></div>
+    <div class="pager" id="pager" hidden></div>
+  </main>
+
+  <div class="modal-backdrop" id="detail-modal">
+    <div class="glass-card modal" role="dialog" aria-modal="true">
+      <button class="modal-close" type="button" data-close-modal="detail-modal" aria-label="關閉">✕</button>
+      <div id="detail-body"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>© 2026 江江約會</div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cloud.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/browse.js"></script>
+</body>
+</html>

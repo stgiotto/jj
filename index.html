@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>江江約會</title>
+  <meta name="description" content="江江約會 — 簡潔的交友配對平台。" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .home-simple {
+      min-height: calc(100vh - 140px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 1rem 4rem;
+    }
+    .home-simple h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin: 0 0 0.75rem;
+      letter-spacing: 0.02em;
+    }
+    .home-simple h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, #c4b5fd, #f9a8d4, #fcd34d);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .home-simple .lead {
+      margin: 0 auto 1.75rem;
+      max-width: 22rem;
+      color: var(--text-muted, #a1a1aa);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+    .region-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      max-width: 42rem;
+      margin: 0 auto;
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .region-grid { grid-template-columns: 1fr; max-width: 16rem; }
+    }
+    .region-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.25rem;
+    }
+    .region-card .btn {
+      min-width: 7.5rem;
+      justify-content: center;
+    }
+    .region-cities {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      color: var(--text-muted, #a1a1aa);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+    .site-footer.compact {
+      padding: 1.25rem 0;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted, #71717a);
+    }
+    .site-footer.compact .legal { display: none; }
+    .site-nav-title-only .container {
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav site-nav-title-only">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">江</span>
+        <span class="brand-text">江江約會</span>
+      </a>
+    </div>
+  </nav>
+
+  <main class="home-simple">
+    <div>
+      <h1>江江約會<br /><em>選擇今晚約會的對象</em></h1>
+      <p class="lead">遇見心動的她</p>
+      <div class="region-grid">
+        <div class="region-card">
+          <a class="btn btn-primary" href="browse.html?region=north&pick=1">北部</a>
+          <ul class="region-cities">
+            <li>台北</li>
+            <li>新北</li>
+            <li>桃園</li>
+            <li>新竹</li>
+          </ul>
+        </div>
+        <div class="region-card">
+          <a class="btn btn-primary" href="browse.html?region=central&pick=1">中部</a>
+          <ul class="region-cities">
+            <li>台中</li>
+          </ul>
+        </div>
+        <div class="region-card">
+          <a class="btn btn-primary" href="browse.html?region=south&pick=1">南部</a>
+          <ul class="region-cities">
+            <li>台南</li>
+            <li>高雄</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer compact">
+    <div class="container">© 2026 江江約會</div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
