@@ -102,6 +102,8 @@
   /** 右下角的「雲端連線狀態」小標籤；點一下會重新檢查連線 */
   function mountCloudStatus() {
     const store = global.XinXianStore;
+    // 只在後台管理頁顯示；前台不顯示此標籤
+    if (!document.getElementById("migrate-modal")) return;
     if (!store || !store.getCloudStatus || document.getElementById("cloud-status")) return;
     const el = document.createElement("button");
     el.type = "button";

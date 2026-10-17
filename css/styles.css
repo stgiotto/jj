@@ -1374,3 +1374,33 @@ body.age-gate-locked > *:not(#age-gate) {
   color: var(--gold);
   font-size: 0.9rem;
 }
+
+/* 手機頂端列：品牌與地區按鈕自動換行，不再被固定高度裁掉 */
+.site-nav-regions {
+  height: auto;
+  min-height: var(--nav-h);
+  padding: 0.5rem 0;
+}
+.site-nav-regions .container {
+  row-gap: 0.5rem;
+}
+.brand-text {
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .site-nav-regions .container {
+    justify-content: flex-start;
+  }
+  .site-nav-regions .region-nav {
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+  .site-nav-regions .region-nav li {
+    flex: 1 1 0;
+  }
+  .site-nav-regions .region-nav a {
+    min-width: 0;
+    width: 100%;
+    padding: 0.45rem 0.5rem;
+  }
+}
