@@ -48,14 +48,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const meta = regions[region];
       const title = meta.pageTitle || meta.label + "妹妹";
       pageTitle.textContent = title;
-      document.title = "江江約會";
+      document.title = "金杏福外送茶";
       if (pageBlurb) {
         pageBlurb.hidden = !meta.blurb;
         pageBlurb.textContent = meta.blurb || "";
       }
     } else {
       pageTitle.textContent = "瀏覽會員";
-      document.title = "江江約會";
+      document.title = "金杏福外送茶";
       if (pageBlurb) {
         pageBlurb.hidden = true;
         pageBlurb.textContent = "";

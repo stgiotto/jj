@@ -192,7 +192,7 @@
       <div class="age-gate-card">
         <div class="badge">18+</div>
         <h2 id="age-gate-title">年齡限制告知</h2>
-        <p>江江約會僅供年滿 18 歲的成年人使用。進入本站前，請確認你已達法定成年年齡。</p>
+        <p>金杏福外送茶僅供年滿 18 歲的成年人使用。進入本站前，請確認你已達法定成年年齡。</p>
         <div class="age-gate-actions">
           <button type="button" class="btn btn-primary" data-age="yes">我已滿 18 歲，進入網站</button>
           <button type="button" class="btn btn-ghost" data-age="no">我未滿 18 歲</button>
