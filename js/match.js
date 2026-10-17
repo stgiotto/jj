@@ -12,6 +12,18 @@ document.addEventListener("DOMContentLoaded", () => {
   async function refreshQueue() {
     queue = await XinXianStore.getSwipeQueue();
     current = queue[0] || null;
+    // 佇列是輕量資料（沒有評價圖片）；目前這張卡改讀完整資料，失敗則沿用輕量資料
+    if (current) {
+      try {
+        const full = await XinXianStore.getMemberById(current.id);
+        if (full) {
+          current = full;
+          queue[0] = full;
+        }
+      } catch (err) {
+        console.error("[match] 讀取完整會員資料失敗，改用摘要", err);
+      }
+    }
     render();
   }
 
@@ -34,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const btn = document.getElementById("empty-reset");
       if (btn) btn.addEventListener("click", () => {
         XinXianStore.resetMatchState();
-        refreshQueue();
+        refreshSafe();
       });
       return;
     }
@@ -78,14 +90,14 @@ document.addEventListener("DOMContentLoaded", () => {
         XinXianStore.passMember(member.id);
       }
       animating = false;
-      refreshQueue();
+      refreshSafe();
     }, 320);
   }
 
   document.getElementById("reset-swipes").addEventListener("click", () => {
     if (confirm("確定要清除喜歡／略過／配對紀錄嗎？")) {
       XinXianStore.resetMatchState();
-      refreshQueue();
+      refreshSafe();
     }
   });
 
@@ -94,8 +106,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "ArrowRight") act("like");
   });
 
-  refreshQueue().catch((err) => {
-    console.error(err);
-    area.innerHTML = `<div class="glass-card swipe-card"><p class="bio">載入失敗，請重新整理。</p></div>`;
-  });
+  function refreshSafe() {
+    return refreshQueue().catch((err) => {
+      console.error(err);
+      queueInfo.textContent = "";
+      XinXianUI.showLoadError(area, err, start);
+    });
+  }
+
+  function start() {
+    area.innerHTML = `<div class="glass-card swipe-card"><p class="bio">載入中…</p></div>`;
+    return refreshSafe();
+  }
+  start();
 });

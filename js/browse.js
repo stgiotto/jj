@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <button type="button" class="btn btn-ghost btn-sm" data-page="next" ${page >= totalPages ? "disabled" : ""}>下一頁</button>`;
   }
 
-  async function render() {
+  async function renderInner() {
     updateHeading();
     updateRegionNav();
     setActiveSortBtn();
@@ -176,26 +176,54 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPager(total, totalPages);
   }
 
-  async function bumpViews(id) {
-    let m = memberCache[id] || (await XinXianStore.getMemberById(id));
-    if (!m) return;
-    const next = { ...m, views: (m.views || 0) + 1 };
-    memberCache[id] = next;
-    if (activeCache) {
-      const i = activeCache.findIndex((x) => x.id === id);
-      if (i >= 0) activeCache[i] = next;
-    }
+  /** 包一層：讀取失敗時顯示原因 + 重試按鈕（雲端模式不會再退回示範資料） */
+  async function render() {
     try {
-      await XinXianStore.upsertMember(next);
+      await renderInner();
+    } catch (err) {
+      console.error(err);
+      countEl.textContent = "";
+      if (pagerEl) pagerEl.hidden = true;
+      XinXianUI.showLoadError(grid, err, () => {
+        activeCache = null;
+        memberCache = {};
+        render().then(() => maybeSurprisePick()).catch(() => {});
+      });
+    }
+  }
+
+  async function bumpViews(id) {
+    try {
+      const next = await XinXianStore.bumpViews(id);
+      if (next == null) return;
+      const m = memberCache[id];
+      if (m) memberCache[id] = { ...m, views: next };
+      if (activeCache) {
+        const i = activeCache.findIndex((x) => x.id === id);
+        if (i >= 0) activeCache[i] = { ...activeCache[i], views: next };
+      }
     } catch (err) {
       console.error("[browse] 更新瀏覽次數失敗", err);
     }
   }
 
   async function showDetail(id, opts = {}) {
-    await bumpViews(id);
-    const m = memberCache[id] || (await XinXianStore.getMemberById(id));
-    if (!m || m.active === false) return;
+    const bumping = bumpViews(id);
+    detailBody.innerHTML = `<p style="padding:2rem;text-align:center;color:var(--text-muted)">載入中…</p>`;
+    XinXianUI.openModal("detail-modal");
+    let m;
+    try {
+      // 列表是輕量資料；詳情一律向雲端讀完整的單一會員（含全部照片與評價圖片）
+      m = await XinXianStore.getMemberById(id);
+    } catch (err) {
+      console.error(err);
+      XinXianUI.showLoadError(detailBody, err, () => showDetail(id, opts), { title: "載入會員資料失敗" });
+      return;
+    }
+    if (!m || m.active === false) {
+      XinXianUI.closeModal("detail-modal");
+      return;
+    }
     const banner = opts.surprise
       ? `<div class="surprise-banner">熱門推薦</div>`
       : "";
@@ -205,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : "";
     const gallery = photos.length > 1
       ? `<div class="detail-gallery">${photos.slice(1).map((src) => `<img src="${XinXianUI.escapeHtml(src)}" alt="" />`).join("")}</div>`
-      : (photos.length === 1 ? "" : "");
+      : "";
     detailBody.innerHTML = `
       ${banner}
       ${hero}
@@ -218,8 +246,10 @@ document.addEventListener("DOMContentLoaded", () => {
       ${gallery}
       <p class="detail-bio">${XinXianUI.escapeHtml(m.bio)}</p>
       ${XinXianUI.reviewsHtml(m)}`;
-    XinXianUI.openModal("detail-modal");
-    if (sortMode === "views") await render();
+    if (sortMode === "views") {
+      await bumping;
+      await render();
+    }
   }
 
   async function poolForSurprise() {
@@ -300,11 +330,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  loadActive()
-    .then(() => render())
-    .then(() => maybeSurprisePick())
-    .catch((err) => {
-      console.error(err);
-      grid.innerHTML = `<div class="empty-state glass-card" style="grid-column:1/-1;padding:2.5rem">載入會員失敗，請稍後再試。</div>`;
-    });
+  function start() {
+    grid.innerHTML = `<div class="empty-state glass-card" style="grid-column:1/-1;padding:2.5rem">載入中…</div>`;
+    return render().then(() => maybeSurprisePick());
+  }
+  start().catch((err) => {
+    console.error(err);
+    XinXianUI.showLoadError(grid, err, start);
+  });
 });

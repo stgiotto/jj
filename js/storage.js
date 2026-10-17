@@ -20,6 +20,83 @@
       : null;
   }
 
+  // ---------------------------------------------------------------------
+  // 雲端連線狀態 + 錯誤說明
+  // ---------------------------------------------------------------------
+  const status = {
+    state: cloud() ? "pending" : "local", // local | pending | ok | error
+    message: "",
+    at: 0
+  };
+
+  function setStatus(state, message) {
+    status.state = state;
+    status.message = message || "";
+    status.at = Date.now();
+    try {
+      global.dispatchEvent(new CustomEvent("xinxian-cloud-status", { detail: Object.assign({}, status) }));
+    } catch (_) {}
+  }
+
+  /** 把 Supabase／fetch 的各種錯誤轉成人看得懂的原因 */
+  function describeError(err) {
+    if (!err) return "未知錯誤";
+    const raw = typeof err === "string" ? err : err.message || String(err);
+    const code = err.code ? String(err.code) : "";
+    const httpStatus = err.status || err.statusCode || "";
+    let reason = raw;
+    if (/failed to fetch|networkerror|load failed|network request failed/i.test(raw)) {
+      reason = "無法連線到 Supabase（網路中斷、DNS 或連線被阻擋）";
+    } else if (/timeout|逾時|abort/i.test(raw) || code === "57014") {
+      reason = code === "57014"
+        ? "資料庫查詢逾時（資料太大？請到管理頁執行「遷移舊照片」）"
+        : "連線逾時（伺服器太久沒有回應）";
+    } else if (/row-level security|\brls\b|permission denied/i.test(raw) || code === "42501") {
+      reason = "沒有權限（資料庫 RLS 政策擋下）：" + raw;
+    } else if (/jwt|apikey|invalid api key/i.test(raw) || code === "PGRST301") {
+      reason = "API 金鑰無效或過期：" + raw;
+    } else if (/relation .* does not exist|PGRST205|schema cache/i.test(raw) || code === "42P01") {
+      reason = "資料表不存在，請先在 Supabase 執行 supabase/schema.sql：" + raw;
+    } else if (/bucket not found/i.test(raw)) {
+      reason = "Storage bucket「photos」不存在，請先執行 supabase/schema.sql：" + raw;
+    }
+    const extra = [];
+    if (code && reason.indexOf(code) < 0) extra.push("code " + code);
+    if (httpStatus && reason.indexOf(String(httpStatus)) < 0) extra.push("HTTP " + httpStatus);
+    if (err.hint) extra.push("提示：" + err.hint);
+    return extra.length ? reason + "（" + extra.join("，") + "）" : reason;
+  }
+
+  /** 執行雲端呼叫：更新連線狀態；失敗時丟出訊息可讀的 Error（保留 cause） */
+  async function cloudCall(fn) {
+    try {
+      const r = await fn();
+      setStatus("ok", "");
+      return r;
+    } catch (err) {
+      const msg = describeError(err);
+      console.error("[XinXianStore] 雲端操作失敗：", err);
+      setStatus("error", msg);
+      const e = new Error(msg);
+      e.cause = err;
+      e.code = err && err.code;
+      e.isCloudError = true;
+      throw e;
+    }
+  }
+
+  function getCloudStatus() {
+    return Object.assign({}, status);
+  }
+
+  /** 重新檢查雲端連線（會更新狀態）；本機模式直接回傳 true */
+  async function pingCloud() {
+    const c = cloud();
+    if (!c) return true;
+    setStatus("pending", "");
+    return cloudCall(() => c.ping());
+  }
+
   function mergeDemoMetrics(list) {
     const defaults = global.XINXIAN_DEFAULT_MEMBERS || [];
     const byId = Object.fromEntries(defaults.map((d) => [d.id, d]));
@@ -56,42 +133,35 @@
     }
   }
 
+  /**
+   * 會員列表。雲端模式：回傳輕量資料（封面 + 摘要）；讀取失敗會「丟出錯誤」，
+   * 不會再偷偷退回本機示範資料。
+   */
   async function getMembers() {
     const c = cloud();
-    if (c) {
-      try {
-        return await c.getMembers();
-      } catch (err) {
-        console.error("[XinXianStore] 雲端讀取會員失敗，改用本機", err);
-        return getMembersLocal();
-      }
-    }
+    if (c) return cloudCall(() => c.getMembers());
     return getMembersLocal();
   }
 
   async function saveMembers(list) {
     const c = cloud();
     if (c) {
-      await c.saveMembers(list);
+      await cloudCall(() => c.saveMembers(list));
       return;
     }
     localStorage.setItem(MEMBERS_KEY, JSON.stringify(list));
   }
 
   async function getActiveMembers() {
-    const list = await getMembers();
+    const c = cloud();
+    if (c) return cloudCall(() => c.getActiveMembers());
+    const list = await getMembersLocal();
     return list.filter((m) => m.active !== false);
   }
 
   async function getMemberById(id) {
     const c = cloud();
-    if (c) {
-      try {
-        return await c.getMemberById(id);
-      } catch (err) {
-        console.error("[XinXianStore] 雲端讀取會員失敗", err);
-      }
-    }
+    if (c) return cloudCall(() => c.getMemberById(id));
     const list = await getMembersLocal();
     return list.find((m) => m.id === id) || null;
   }
@@ -99,7 +169,8 @@
   async function upsertMember(member) {
     const c = cloud();
     if (c) {
-      return await c.upsertMember(member);
+      await cloudCall(() => c.upsertMember(member));
+      return true;
     }
     const list = await getMembersLocal();
     const idx = list.findIndex((m) => m.id === member.id);
@@ -115,7 +186,8 @@
   async function deleteMember(id) {
     const c = cloud();
     if (c) {
-      return await c.deleteMember(id);
+      await cloudCall(() => c.deleteMember(id));
+      return true;
     }
     const list = (await getMembersLocal()).filter((m) => m.id !== id);
     localStorage.setItem(MEMBERS_KEY, JSON.stringify(list));
@@ -125,7 +197,8 @@
   async function toggleMemberActive(id) {
     const c = cloud();
     if (c) {
-      return await c.toggleMemberActive(id);
+      await cloudCall(() => c.toggleMemberActive(id));
+      return true;
     }
     const list = await getMembersLocal();
     const m = list.find((x) => x.id === id);
@@ -140,10 +213,33 @@
     const defaults = deepClone(global.XINXIAN_DEFAULT_MEMBERS);
     const c = cloud();
     if (c) {
-      return await c.resetMembers(defaults);
+      await cloudCall(() => c.resetMembers(defaults));
+      return true;
     }
     localStorage.setItem(MEMBERS_KEY, JSON.stringify(defaults));
     return defaults;
+  }
+
+  /** 瀏覽次數 +1；雲端只更新 views 欄位（不會碰照片／評價）。回傳新的次數 */
+  async function bumpViews(id) {
+    const c = cloud();
+    if (c) return cloudCall(() => c.incrementViews(id));
+    const list = await getMembersLocal();
+    const m = list.find((x) => x.id === id);
+    if (!m) return null;
+    m.views = (m.views || 0) + 1;
+    localStorage.setItem(MEMBERS_KEY, JSON.stringify(list));
+    return m.views;
+  }
+
+  /**
+   * 儲存前把 data URL 照片上傳到 Storage（雲端模式）。本機模式原樣返回。
+   * 失敗會丟出 code = "UPLOAD_FAILED" 的錯誤，呼叫端不可再儲存。
+   */
+  async function prepareMemberForSave(member, onProgress) {
+    const c = cloud();
+    if (!c) return member;
+    return cloudCall(() => c.ensureMemberUploaded(member, onProgress));
   }
 
   function getLikes() {
@@ -227,6 +323,11 @@
     deleteMember,
     toggleMemberActive,
     resetMembers,
+    bumpViews,
+    prepareMemberForSave,
+    getCloudStatus,
+    pingCloud,
+    describeError,
     getLikes,
     getPasses,
     getMatches,

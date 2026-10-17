@@ -1329,3 +1329,48 @@ body.age-gate-locked > *:not(#age-gate) {
 .modal .front-reviews .review-list {
   max-height: 220px;
 }
+
+/* ---- 雲端連線狀態 / 載入失敗 / 照片遷移 ---- */
+.cloud-status {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 900;
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: rgba(14, 14, 22, 0.9);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.cloud-status.cloud-ok { color: var(--success); border-color: rgba(52, 211, 153, 0.45); }
+.cloud-status.cloud-error { color: var(--danger); border-color: rgba(248, 113, 113, 0.6); }
+.cloud-status.cloud-pending { color: var(--gold); }
+.load-error { text-align: center; }
+.load-error strong { color: var(--danger); font-size: 1.05rem; }
+.load-error p { margin: 0.5rem 0; color: var(--text); word-break: break-word; }
+.load-error .load-error-hint { color: var(--text-muted); font-size: 0.8rem; }
+.migrate-log {
+  max-height: 14rem;
+  overflow: auto;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-muted);
+}
+.migrate-bar { height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; margin: 0.5rem 0; }
+.migrate-bar > span { display: block; height: 100%; width: 0; background: linear-gradient(120deg, #8b5cf6, #f472b6); transition: width 0.2s; }
+.legacy-banner {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(232, 195, 106, 0.5);
+  border-radius: var(--radius-sm);
+  color: var(--gold);
+  font-size: 0.9rem;
+}
