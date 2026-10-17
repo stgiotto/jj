@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>江江約會管理</title>
-  <link rel="stylesheet" href="css/styles.css?v=20261018a" />
+  <link rel="stylesheet" href="css/styles.css?v=20261018b" />
 </head>
 <body>
   <nav class="site-nav site-nav-title-only">
@@ -56,21 +56,22 @@
         <div class="form-row-2">
           <div class="filter-group">
             <label for="e-name">姓名</label>
-            <input id="e-name" class="field" required maxlength="20" />
+            <input id="e-name" class="field" required maxlength="20" placeholder="請輸入姓名" />
           </div>
           <div class="filter-group">
             <label for="e-age">年齡（22+）</label>
-            <input id="e-age" class="field" type="number" min="22" max="80" required />
+            <input id="e-age" class="field" type="number" min="22" max="80" required placeholder="請輸入年齡" />
           </div>
         </div>
         <div class="form-row-2">
           <div class="filter-group">
             <label for="e-city">城市</label>
-            <select id="e-city" class="field" required></select>
+            <select id="e-city" class="field" required><option value="">請選擇</option></select>
           </div>
           <div class="filter-group">
             <label for="e-gender">性別</label>
-            <select id="e-gender" class="field">
+            <select id="e-gender" class="field" required>
+              <option value="">請選擇</option>
               <option>女</option>
               <option>男</option>
               <option>其他</option>
@@ -152,26 +153,7 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="migrate-modal">
-    <div class="glass-card modal" role="dialog" aria-modal="true">
-      <button class="modal-close" type="button" data-close-modal="migrate-modal" aria-label="關閉">✕</button>
-      <h2 style="margin-bottom:0.5rem">遷移舊照片</h2>
-      <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem">
-        把資料庫中以 base64 存放的會員照片與評價圖片，逐筆上傳到 Storage「photos」並改寫成公開網址。
-        可重複執行（已是網址的會略過），可中途中止。完成後前台與管理頁載入會明顯變快。
-      </p>
-      <div class="migrate-bar"><span id="migrate-bar"></span></div>
-      <div id="migrate-label" style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.5rem">尚未開始</div>
-      <pre class="migrate-log" id="migrate-log"></pre>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-primary" id="migrate-start">開始遷移</button>
-        <button type="button" class="btn btn-ghost" id="migrate-stop" disabled>中止</button>
-        <button type="button" class="btn btn-ghost" data-close-modal="migrate-modal">關閉</button>
-      </div>
-    </div>
-  </div>
-
-  <footer class="site-footer">
+<footer class="site-footer">
     <div class="container">
       <div>© 2026 江江約會管理</div>
       <div class="legal">僅管理示範交友檔案，禁止用於非法或有償性服務用途。</div>
@@ -179,11 +161,11 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=20261018a"></script>
-  <script src="js/cloud.js?v=20261018a"></script>
-  <script src="js/data.js?v=20261018a"></script>
-  <script src="js/storage.js?v=20261018a"></script>
-  <script src="js/app.js?v=20261018a"></script>
-  <script src="js/admin.js?v=20261018a"></script>
+  <script src="js/config.js?v=20261018b"></script>
+  <script src="js/cloud.js?v=20261018b"></script>
+  <script src="js/data.js?v=20261018b"></script>
+  <script src="js/storage.js?v=20261018b"></script>
+  <script src="js/app.js?v=20261018b"></script>
+  <script src="js/admin.js?v=20261018b"></script>
 </body>
 </html>

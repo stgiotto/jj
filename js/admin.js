@@ -273,9 +273,9 @@ document.addEventListener("DOMContentLoaded", () => {
     editTitle.textContent = isNew ? "新增妹妹" : "編輯會員";
     document.getElementById("e-id").value = member?.id || "";
     document.getElementById("e-name").value = member?.name || "";
-    document.getElementById("e-age").value = member?.age || 25;
-    document.getElementById("e-city").value = member?.city || (window.XINXIAN_CITIES || [])[0] || "台北";
-    document.getElementById("e-gender").value = member?.gender || "女";
+    document.getElementById("e-age").value = member?.age || "";
+    document.getElementById("e-city").value = member?.city || "";
+    document.getElementById("e-gender").value = member?.gender || "";
     document.getElementById("e-bio").value = member?.bio || "";
     draftPhotos = XinXianUI.memberPhotos(member).slice(0, MAX_PHOTOS);
     renderPhotoGrid();
