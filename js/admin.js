@@ -275,7 +275,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("e-name").value = member?.name || "";
     document.getElementById("e-age").value = member?.age || "";
     document.getElementById("e-city").value = member?.city || "";
-    document.getElementById("e-gender").value = member?.gender || "";
     document.getElementById("e-bio").value = member?.bio || "";
     draftPhotos = XinXianUI.memberPhotos(member).slice(0, MAX_PHOTOS);
     renderPhotoGrid();
@@ -328,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
           name: document.getElementById("e-name").value.trim(),
           age,
           city: document.getElementById("e-city").value,
-          gender: document.getElementById("e-gender").value,
+          gender: existing?.gender || "女",
           bio: document.getElementById("e-bio").value.trim(),
           interests: existing?.interests || [],
           avatarHue: 210,
