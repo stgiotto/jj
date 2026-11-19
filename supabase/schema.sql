@@ -1,4 +1,4 @@
--- 江江約會 — Supabase / Postgres schema（原型）
+-- 金杏福外送茶 — Supabase / Postgres schema（原型）
 -- 在 Supabase SQL Editor 整段執行即可。
 -- 警告：下方 RLS 允許 anon 寫入，僅供 jj-manage 原型；上線前務必改為認證／service role。
 
@@ -29,7 +29,7 @@ create index if not exists members_heat_idx on public.members (heat desc);
 create index if not exists members_views_idx on public.members (views desc);
 create index if not exists members_created_days_ago_idx on public.members (created_days_ago);
 
-comment on table public.members is '江江約會會員；active=啟用；photos 可為 data URL 或 Storage 公開 URL';
+comment on table public.members is '金杏福外送茶會員；active=啟用；photos 可為 data URL 或 Storage 公開 URL';
 comment on column public.members.active is '對應前台 active；未啟用者前台不顯示';
 comment on column public.members.photos is '最多 6 張；jsonb 字串陣列';
 comment on column public.members.heat is '熱門分數';
