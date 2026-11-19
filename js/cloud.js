@@ -1,5 +1,5 @@
 /**
- * 江江約會 — Supabase 雲端資料層
+ * 金杏福外送茶 — Supabase 雲端資料層
  * 需先載入 @supabase/supabase-js CDN 與 js/config.js。
  * 若設定缺失／未啟用，匯出 null（XinXianCloud = null）。
  */

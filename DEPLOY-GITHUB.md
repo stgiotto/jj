@@ -1,4 +1,4 @@
-# 江江約會：GitHub Pages 部署指南
+# 金杏福外送茶：GitHub Pages 部署指南
 
 請在你的 Windows 電腦 DESKTOP-4A7LVC6 上完成以下操作。由於 Grok Bot 使用的電腦目前被 GitHub 顯示「Access is temporarily restricted」，請不要在 Grok Bot 的電腦建立或推送 GitHub 儲存庫；請由你的電腦操作。
 

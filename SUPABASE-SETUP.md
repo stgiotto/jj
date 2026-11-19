@@ -1,4 +1,4 @@
-# 江江約會：Supabase 雲端設定（繁體中文）
+# 金杏福外送茶：Supabase 雲端設定（繁體中文）
 
 GitHub Pages 只能放靜態檔，無法自己持久化「所有訪客共用」的會員／評價。請用免費 Supabase（Postgres + Storage）當後端。
 

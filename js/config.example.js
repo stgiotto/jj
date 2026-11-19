@@ -1,5 +1,5 @@
 /**
- * 江江約會 — 雲端設定範本
+ * 金杏福外送茶 — 雲端設定範本
  * 複製為 config.js 後填入 Supabase 專案 URL 與 anon key，並將 enabled 設為 true。
  * 詳見 SUPABASE-SETUP.md
  *

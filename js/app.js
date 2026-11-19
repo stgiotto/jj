@@ -1,5 +1,5 @@
 /**
- * 江江約會 — 共用 UI 工具
+ * 金杏福外送茶 — 共用 UI 工具
  */
 (function (global) {
   function avatarStyle(hue) {

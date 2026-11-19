@@ -1,5 +1,5 @@
 ﻿/**
- * 江江約會 — 雲端設定（Supabase jiangjiang-dating / Singapore）
+ * 金杏福外送茶 — 雲端設定（Supabase jiangjiang-dating / Singapore）
  */
 window.XINXIAN_CLOUD = {
   enabled: true,

@@ -1,5 +1,5 @@
 /**
- * 江江約會 — 資料層
+ * 金杏福外送茶 — 資料層
  * 會員／評價：雲端啟用時走 Supabase（XinXianCloud），否則 localStorage。
  * 喜歡／略過／配對／年齡門：一律本機（每位訪客各自）。
  * 會員相關 API 皆為 async（請 await）。
